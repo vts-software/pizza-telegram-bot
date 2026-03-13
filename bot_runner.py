@@ -5,7 +5,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 django.setup()
 
-from bot.bot import bot
-import bot.handlers
+from tg_bot.telegram_bot import bot
+import tg_bot.handlers
+
+print("Bot started...")
 
 bot.infinity_polling()
