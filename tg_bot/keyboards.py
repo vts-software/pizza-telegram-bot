@@ -18,3 +18,19 @@ def main_menu():
     )
 
     return keyboard
+
+
+def pizza_keyboard(pizzas):
+
+    keyboard = InlineKeyboardMarkup()
+
+    for pizza in pizzas:
+
+        keyboard.add(
+            InlineKeyboardButton(
+                f"{pizza.name} {pizza.size} — {pizza.price}",
+                callback_data=f"pizza_{pizza.id}"
+            )
+        )
+
+    return keyboard

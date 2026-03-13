@@ -1,5 +1,5 @@
 from .telegram_bot import bot
-from .keyboards import main_menu
+from .keyboards import main_menu, pizza_keyboard
 
 from menu.models import Pizza
 from users.models import TelegramUser
@@ -31,44 +31,36 @@ def start(message):
     )
 
 
-@bot.callback_query_handler(func=lambda call: True)
-def callbacks(call):
+@bot.callback_query_handler(func=lambda call: call.data == "menu")
+def show_menu(call):
 
-    if call.data == "menu":
+    pizzas = Pizza.objects.filter(available=True)
 
-        pizzas = Pizza.objects.filter(available=True)
+    bot.send_message(
+        call.message.chat.id,
+        "Выберите пиццу 🍕",
+        reply_markup=pizza_keyboard(pizzas)
+    )
 
-        text = "Наше меню 🍕\n\n"
 
-        for pizza in pizzas:
-            text += f"{pizza.id}. {pizza.name} {pizza.size} — {pizza.price}\n"
+@bot.callback_query_handler(func=lambda call: call.data.startswith("pizza_"))
+def add_to_cart(call):
 
-        bot.send_message(call.message.chat.id, text)
+    pizza_id = int(call.data.split("_")[1])
 
-    elif call.data == "cart":
+    pizza = Pizza.objects.get(id=pizza_id)
 
-        user = TelegramUser.objects.get(
-            telegram_id=call.from_user.id
-        )
+    user = TelegramUser.objects.get(
+        telegram_id=call.from_user.id
+    )
 
-        items = CartItem.objects.filter(user=user)
+    CartItem.objects.create(
+        user=user,
+        pizza=pizza,
+        quantity=1
+    )
 
-        if not items:
-            bot.send_message(call.message.chat.id, "Корзина пустая")
-            return
-
-        text = "Корзина 🛒\n\n"
-
-        total = 0
-
-        for item in items:
-            text += f"{item.pizza.name} x{item.quantity}\n"
-            total += item.pizza.price
-
-        text += f"\nИтого: {total}"
-
-        bot.send_message(call.message.chat.id, text)
-
-    elif call.data == "orders":
-
-        bot.send_message(call.message.chat.id, "Раздел заказов")
+    bot.send_message(
+        call.message.chat.id,
+        f"{pizza.name} добавлена в корзину 🛒"
+    )
