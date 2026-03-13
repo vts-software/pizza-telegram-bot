@@ -1,11 +1,19 @@
-from rest_framework import generics
-from .models import Category, Pizza
-from .serializers import CategorySerializer, PizzaSerializer
+from django.http import JsonResponse
+from .models import Pizza
 
-class CategoryListView(generics.ListAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
 
-class PizzaListView(generics.ListAPIView):
-    queryset = Pizza.objects.all()
-    serializer_class = PizzaSerializer
+def pizza_list(request):
+
+    pizzas = Pizza.objects.filter(available=True)
+
+    data = []
+
+    for pizza in pizzas:
+        data.append({
+            "id": pizza.id,
+            "name": pizza.name,
+            "size": pizza.size,
+            "price": float(pizza.price)
+        })
+
+    return JsonResponse(data, safe=False)

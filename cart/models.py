@@ -1,22 +1,21 @@
 from django.db import models
-
-from users.models import User
-from menu.models import PizzaSize
+from users.models import TelegramUser
+from menu.models import Pizza
 
 
 class CartItem(models.Model):
+
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="cart_items",
+        TelegramUser,
+        on_delete=models.CASCADE
     )
 
-    pizza_size = models.ForeignKey(
-        PizzaSize,
-        on_delete=models.CASCADE,
+    pizza = models.ForeignKey(
+        Pizza,
+        on_delete=models.CASCADE
     )
 
-    quantity = models.PositiveIntegerField(default=1)
+    quantity = models.IntegerField(default=1)
 
     def __str__(self):
-        return f"{self.user} - {self.pizza_size}"# Create your models here.
+        return f"{self.user} - {self.pizza}"
