@@ -1,27 +1,20 @@
 from django.test import TestCase
+from faker import Faker
 from .models import Pizza
 
+fake = Faker()
 
-class PizzaModelTest(TestCase):
 
-    def setUp(self):
+class PizzaFakerTest(TestCase):
 
-        self.pizza = Pizza.objects.create(
-            name="Pepperoni",
-            description="Classic pizza",
+    def test_create_random_pizza(self):
+
+        pizza = Pizza.objects.create(
+            name=fake.word(),
+            description=fake.text(),
             size="M",
-            price=15,
+            price=10,
             available=True
         )
 
-    def test_pizza_created(self):
-
-        self.assertEqual(self.pizza.name, "Pepperoni")
-
-    def test_pizza_price(self):
-
-        self.assertEqual(self.pizza.price, 15)
-
-    def test_pizza_available(self):
-
-        self.assertTrue(self.pizza.available)
+        self.assertTrue(pizza.available)
