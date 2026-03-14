@@ -43,6 +43,8 @@ urlpatterns = [
 
     path('api/menu/', include('menu.urls')),
 
+    path("api/cart/", include("cart.urls")),
+
     path("api/token/", TokenObtainPairView.as_view()),
 
     path("api/token/refresh/", TokenRefreshView.as_view()),
