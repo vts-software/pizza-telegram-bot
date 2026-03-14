@@ -2,15 +2,26 @@ from django.test import TestCase
 from .models import Pizza
 
 
-class PizzaTest(TestCase):
+class PizzaModelTest(TestCase):
 
-    def test_create_pizza(self):
+    def setUp(self):
 
-        pizza = Pizza.objects.create(
+        self.pizza = Pizza.objects.create(
             name="Pepperoni",
-            description="Classic",
+            description="Classic pizza",
             size="M",
-            price=15
+            price=15,
+            available=True
         )
 
-        self.assertEqual(pizza.name, "Pepperoni")
+    def test_pizza_created(self):
+
+        self.assertEqual(self.pizza.name, "Pepperoni")
+
+    def test_pizza_price(self):
+
+        self.assertEqual(self.pizza.price, 15)
+
+    def test_pizza_available(self):
+
+        self.assertTrue(self.pizza.available)

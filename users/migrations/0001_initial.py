@@ -12,14 +12,13 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Pizza',
+            name='TelegramUser',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('description', models.TextField()),
-                ('size', models.CharField(choices=[('S', 'Small'), ('M', 'Medium'), ('L', 'Large')], max_length=1)),
-                ('price', models.DecimalField(decimal_places=2, max_digits=6)),
-                ('available', models.BooleanField(default=True)),
+                ('telegram_id', models.BigIntegerField(unique=True)),
+                ('username', models.CharField(blank=True, max_length=255, null=True)),
+                ('first_name', models.CharField(max_length=255)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
             ],
         ),
     ]
