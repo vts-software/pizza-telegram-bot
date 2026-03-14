@@ -1,0 +1,32 @@
+[
+  {
+    "model": "menu.pizza",
+    "fields": {
+      "name": "Pepperoni",
+      "description": "Classic pepperoni pizza",
+      "size": "M",
+      "price": 15,
+      "available": true
+    }
+  },
+  {
+    "model": "menu.pizza",
+    "fields": {
+      "name": "Margherita",
+      "description": "Tomato mozzarella basil",
+      "size": "M",
+      "price": 12,
+      "available": true
+    }
+  },
+  {
+    "model": "menu.pizza",
+    "fields": {
+      "name": "Hawaiian",
+      "description": "Ham pineapple",
+      "size": "L",
+      "price": 18,
+      "available": true
+    }
+  }
+]
