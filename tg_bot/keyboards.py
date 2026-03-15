@@ -28,9 +28,32 @@ def pizza_keyboard(pizzas):
 
         keyboard.add(
             InlineKeyboardButton(
-                f"{pizza.name} {pizza.size} — {pizza.price}",
+                f"{pizza.name} {pizza.price}",
                 callback_data=f"pizza_{pizza.id}"
             )
         )
+
+    return keyboard
+
+
+def cart_keyboard(items):
+
+    keyboard = InlineKeyboardMarkup()
+
+    for item in items:
+
+        keyboard.add(
+            InlineKeyboardButton(
+                f"❌ удалить {item.pizza.name}",
+                callback_data=f"remove_{item.id}"
+            )
+        )
+
+    keyboard.add(
+        InlineKeyboardButton(
+            "✅ Оформить заказ",
+            callback_data="checkout"
+        )
+    )
 
     return keyboard

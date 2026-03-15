@@ -1,13 +1,31 @@
+from django.conf import settings
 from django.db import models
-from users.models import TelegramUser
 from menu.models import Pizza
+
+
+User = settings.AUTH_USER_MODEL
+
+
+class Cart(models.Model):
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="cart"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Cart of {self.user}"
 
 
 class CartItem(models.Model):
 
-    user = models.ForeignKey(
-        TelegramUser,
-        on_delete=models.CASCADE
+    cart = models.ForeignKey(
+        Cart,
+        on_delete=models.CASCADE,
+        related_name="items"
     )
 
     pizza = models.ForeignKey(
@@ -15,7 +33,9 @@ class CartItem(models.Model):
         on_delete=models.CASCADE
     )
 
-    quantity = models.IntegerField(default=1)
+    quantity = models.PositiveIntegerField(default=1)
+
+    added_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user} - {self.pizza}"
+        return f"{self.pizza} x {self.quantity}"

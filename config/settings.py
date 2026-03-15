@@ -56,7 +56,7 @@ INSTALLED_APPS = [
 
     'users',
     'menu',
-    'cart',
+    'cart.apps.CartConfig',
     'orders',
     'tg_bot',
 
