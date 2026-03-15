@@ -4,8 +4,8 @@ from .keyboards import main_menu, pizza_keyboard, cart_keyboard
 
 from menu.models import Pizza
 from users.models import TelegramUser
-from cart.models import CartItem
-from orders.models import Order
+from cart.models import Cart, CartItem
+from orders.models import Order, OrderItem
 
 
 def get_user(message):
@@ -49,15 +49,16 @@ def show_menu(call):
 def add_to_cart(call):
 
     pizza_id = int(call.data.split("_")[1])
-
     pizza = Pizza.objects.get(id=pizza_id)
 
     user = TelegramUser.objects.get(
         telegram_id=call.from_user.id
     )
 
+    cart, _ = Cart.objects.get_or_create(user=user)
+
     item, created = CartItem.objects.get_or_create(
-        user=user,
+        cart=cart,
         pizza=pizza
     )
 
@@ -78,7 +79,8 @@ def show_cart(call):
         telegram_id=call.from_user.id
     )
 
-    items = CartItem.objects.filter(user=user)
+    cart, _ = Cart.objects.get_or_create(user=user)
+    items = CartItem.objects.filter(cart=cart)
 
     if not items:
         bot.send_message(call.message.chat.id, "Корзина пуста")
@@ -125,7 +127,8 @@ def confirm_order(call):
         telegram_id=call.from_user.id
     )
 
-    items = CartItem.objects.filter(user=user)
+    cart, _ = Cart.objects.get_or_create(user=user)
+    items = CartItem.objects.filter(cart=cart)
 
     if not items:
         bot.send_message(call.message.chat.id, "Корзина пуста")
@@ -143,7 +146,7 @@ def confirm_order(call):
 
         total += price
 
-    text += f"\n Итого: {total}"
+    text += f"\nИтого: {total}"
 
     keyboard = InlineKeyboardMarkup()
 
@@ -168,23 +171,33 @@ def create_order(call):
         telegram_id=call.from_user.id
     )
 
-    items = CartItem.objects.filter(user=user)
+    cart, _ = Cart.objects.get_or_create(user=user)
+    items = CartItem.objects.filter(cart=cart)
+
+    if not items:
+        bot.send_message(call.message.chat.id, "Корзина пуста")
+        return
+
+    order = Order.objects.create(user=user)
 
     total = 0
 
     for item in items:
-        total += item.pizza.price * item.quantity
 
-    order = Order.objects.create(
-        user=user,
-        total_price=total
-    )
+        OrderItem.objects.create(
+            order=order,
+            pizza=item.pizza,
+            quantity=item.quantity,
+            price=item.pizza.price
+        )
+
+        total += item.pizza.price * item.quantity
 
     items.delete()
 
     bot.send_message(
         call.message.chat.id,
-        f"Заказ #{order.id} успешно создан 🎉"
+        f"Заказ #{order.id} успешно создан 🎉\nСумма: {total}"
     )
 
 
@@ -204,6 +217,12 @@ def show_orders(call):
     text = "📦 Ваши заказы:\n\n"
 
     for order in orders:
-        text += f"Заказ #{order.id} — {order.total_price}\n"
+
+        total = sum(
+            item.price * item.quantity
+            for item in order.items.all()
+        )
+
+        text += f"Заказ #{order.id} — {total}\n"
 
     bot.send_message(call.message.chat.id, text)
