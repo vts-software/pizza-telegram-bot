@@ -1,5 +1,4 @@
 from .telegram_bot import bot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from .keyboards import main_menu, pizza_keyboard, cart_keyboard
 
 from menu.models import Pizza
@@ -9,7 +8,6 @@ from orders.models import Order, OrderItem
 
 
 def get_user(message):
-
     user, _ = TelegramUser.objects.get_or_create(
         telegram_id=message.from_user.id,
         defaults={
@@ -17,9 +15,10 @@ def get_user(message):
             "first_name": message.from_user.first_name
         }
     )
-
     return user
 
+
+# ---------------- START ---------------- #
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -33,17 +32,21 @@ def start(message):
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data == "menu")
-def show_menu(call):
+# ---------------- MENU ---------------- #
+
+@bot.message_handler(func=lambda message: message.text == "🍕 Меню")
+def show_menu(message):
 
     pizzas = Pizza.objects.filter(available=True)
 
     bot.send_message(
-        call.message.chat.id,
+        message.chat.id,
         "Выберите пиццу",
         reply_markup=pizza_keyboard(pizzas)
     )
 
+
+# ---------------- ADD PIZZA ---------------- #
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("pizza_"))
 def add_to_cart(call):
@@ -66,24 +69,26 @@ def add_to_cart(call):
         item.quantity += 1
         item.save()
 
-    bot.send_message(
-        call.message.chat.id,
+    bot.answer_callback_query(
+        call.id,
         f"{pizza.name} добавлена в корзину 🛒"
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data == "cart")
-def show_cart(call):
+# ---------------- CART ---------------- #
+
+@bot.message_handler(func=lambda message: message.text == "🛒 Корзина")
+def show_cart(message):
 
     user = TelegramUser.objects.get(
-        telegram_id=call.from_user.id
+        telegram_id=message.from_user.id
     )
 
     cart, _ = Cart.objects.get_or_create(user=user)
     items = CartItem.objects.filter(cart=cart)
 
     if not items:
-        bot.send_message(call.message.chat.id, "Корзина пуста")
+        bot.send_message(message.chat.id, "Корзина пуста")
         return
 
     text = "🛒 Ваша корзина:\n\n"
@@ -101,70 +106,40 @@ def show_cart(call):
     text += f"\nИтого: {total}"
 
     bot.send_message(
-        call.message.chat.id,
+        message.chat.id,
         text,
         reply_markup=cart_keyboard(items)
     )
 
+
+# ---------------- REMOVE ITEM ---------------- #
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("remove_"))
 def remove_from_cart(call):
 
     item_id = int(call.data.split("_")[1])
 
-    CartItem.objects.filter(id=item_id).delete()
+    item = CartItem.objects.get(id=item_id)
+
+    if item.quantity > 1:
+        item.quantity -= 1
+        item.save()
+        message = "Количество уменьшено 🛒"
+    else:
+        item.delete()
+        message = "Пицца удалена из корзины 🗑"
+
+    bot.answer_callback_query(call.id)
 
     bot.send_message(
         call.message.chat.id,
-        "Товар удалён из корзины"
+        message
     )
 
+
+# ---------------- CHECKOUT ---------------- #
 
 @bot.callback_query_handler(func=lambda call: call.data == "checkout")
-def confirm_order(call):
-
-    user = TelegramUser.objects.get(
-        telegram_id=call.from_user.id
-    )
-
-    cart, _ = Cart.objects.get_or_create(user=user)
-    items = CartItem.objects.filter(cart=cart)
-
-    if not items:
-        bot.send_message(call.message.chat.id, "Корзина пуста")
-        return
-
-    total = 0
-
-    text = "Подтвердите заказ:\n\n"
-
-    for item in items:
-
-        price = item.pizza.price * item.quantity
-
-        text += f"{item.pizza.name} x{item.quantity} — {price}\n"
-
-        total += price
-
-    text += f"\nИтого: {total}"
-
-    keyboard = InlineKeyboardMarkup()
-
-    keyboard.add(
-        InlineKeyboardButton(
-            "✅ Подтвердить",
-            callback_data="confirm_order"
-        )
-    )
-
-    bot.send_message(
-        call.message.chat.id,
-        text,
-        reply_markup=keyboard
-    )
-
-
-@bot.callback_query_handler(func=lambda call: call.data == "confirm_order")
 def create_order(call):
 
     user = TelegramUser.objects.get(
@@ -201,17 +176,19 @@ def create_order(call):
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data == "orders")
-def show_orders(call):
+# ---------------- ORDERS ---------------- #
+
+@bot.message_handler(func=lambda message: message.text == "📦 Мои заказы")
+def show_orders(message):
 
     user = TelegramUser.objects.get(
-        telegram_id=call.from_user.id
+        telegram_id=message.from_user.id
     )
 
     orders = Order.objects.filter(user=user)
 
     if not orders:
-        bot.send_message(call.message.chat.id, "У вас пока нет заказов")
+        bot.send_message(message.chat.id, "У вас пока нет заказов")
         return
 
     text = "📦 Ваши заказы:\n\n"
@@ -225,4 +202,4 @@ def show_orders(call):
 
         text += f"Заказ #{order.id} — {total}\n"
 
-    bot.send_message(call.message.chat.id, text)
+    bot.send_message(message.chat.id, text)

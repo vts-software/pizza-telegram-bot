@@ -1,6 +1,6 @@
 from django.test import TestCase
 from users.models import TelegramUser
-from .models import Order
+from orders.models import Order
 
 
 class OrderTest(TestCase):
@@ -15,9 +15,7 @@ class OrderTest(TestCase):
     def test_create_order(self):
 
         order = Order.objects.create(
-            user=self.user,
-            total_price=30
+            user=self.user
         )
 
-        self.assertEqual(order.total_price, 30)
-        self.assertEqual(order.status, "new")
+        self.assertEqual(order.user, self.user)

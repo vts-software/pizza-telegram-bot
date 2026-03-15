@@ -1,7 +1,8 @@
 from django.test import TestCase
+
 from users.models import TelegramUser
 from menu.models import Pizza
-from .models import CartItem
+from cart.models import Cart, CartItem
 
 
 class CartTest(TestCase):
@@ -13,20 +14,24 @@ class CartTest(TestCase):
             first_name="Test"
         )
 
+        self.cart = Cart.objects.create(user=self.user)
+
         self.pizza = Pizza.objects.create(
             name="Pepperoni",
             description="Classic",
             size="M",
-            price=15
+            price=15,
+            available=True
         )
 
     def test_add_to_cart(self):
 
         item = CartItem.objects.create(
-            user=self.user,
+            cart=self.cart,
             pizza=self.pizza,
             quantity=2
         )
 
         self.assertEqual(item.quantity, 2)
         self.assertEqual(item.pizza.name, "Pepperoni")
+        self.assertEqual(self.cart.items.count(), 1)

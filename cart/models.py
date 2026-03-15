@@ -1,15 +1,12 @@
-from django.conf import settings
 from django.db import models
 from menu.models import Pizza
-
-
-User = settings.AUTH_USER_MODEL
+from users.models import TelegramUser
 
 
 class Cart(models.Model):
 
     user = models.OneToOneField(
-        User,
+        TelegramUser,
         on_delete=models.CASCADE,
         related_name="cart"
     )
@@ -36,6 +33,9 @@ class CartItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("cart", "pizza")
 
     def __str__(self):
         return f"{self.pizza} x {self.quantity}"

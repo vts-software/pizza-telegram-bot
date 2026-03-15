@@ -1,9 +1,6 @@
-from django.conf import settings
 from django.db import models
 from menu.models import Pizza
-
-
-User = settings.AUTH_USER_MODEL
+from users.models import TelegramUser
 
 
 class Order(models.Model):
@@ -16,7 +13,7 @@ class Order(models.Model):
     )
 
     user = models.ForeignKey(
-        User,
+        TelegramUser,
         on_delete=models.CASCADE,
         related_name="orders"
     )

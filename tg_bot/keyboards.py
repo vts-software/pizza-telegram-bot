@@ -1,20 +1,24 @@
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import (
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton
+)
 
 
 def main_menu():
 
-    keyboard = InlineKeyboardMarkup()
-
-    keyboard.add(
-        InlineKeyboardButton("🍕 Меню", callback_data="menu")
+    keyboard = ReplyKeyboardMarkup(
+        resize_keyboard=True
     )
 
-    keyboard.add(
-        InlineKeyboardButton("🛒 Корзина", callback_data="cart")
+    keyboard.row(
+        KeyboardButton("🍕 Меню"),
+        KeyboardButton("🛒 Корзина")
     )
 
-    keyboard.add(
-        InlineKeyboardButton("📦 Мои заказы", callback_data="orders")
+    keyboard.row(
+        KeyboardButton("📦 Мои заказы")
     )
 
     return keyboard
@@ -28,7 +32,7 @@ def pizza_keyboard(pizzas):
 
         keyboard.add(
             InlineKeyboardButton(
-                f"{pizza.name} {pizza.price}",
+                f"{pizza.name} — {pizza.price}",
                 callback_data=f"pizza_{pizza.id}"
             )
         )
@@ -44,7 +48,7 @@ def cart_keyboard(items):
 
         keyboard.add(
             InlineKeyboardButton(
-                f"❌ удалить {item.pizza.name}",
+                f"➖ {item.pizza.name}",
                 callback_data=f"remove_{item.id}"
             )
         )
