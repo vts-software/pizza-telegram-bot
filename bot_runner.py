@@ -1,13 +1,14 @@
 import os
-import django
+from bot_app import bot
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
-django.setup()
+def main():
+    print("🍕 Pizza Bot is starting...")
+    print(f"🤖 PID: {os.getpid()}")
+    print("🚀 Polling started...\n")
 
-from tg_bot.telegram_bot import bot
-import tg_bot.handlers
+    bot.infinity_polling()
 
-print("Bot started...")
 
-bot.infinity_polling()
+if __name__ == "__main__":
+    main()
