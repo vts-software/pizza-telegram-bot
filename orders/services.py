@@ -1,14 +1,19 @@
-from cart.models import Cart
+from cart.models import Cart, CartItem
 from orders.models import Order, OrderItem
 
 
 def create_order_from_cart(user):
 
-    cart = Cart.objects.get(user=user)
+    cart, _ = Cart.objects.get_or_create(user=user)
+
+    items = CartItem.objects.filter(cart=cart)
+
+    if not items.exists():
+        raise ValueError("Cart is empty")
 
     order = Order.objects.create(user=user)
 
-    for item in cart.items.all():
+    for item in items:
 
         OrderItem.objects.create(
             order=order,
@@ -17,6 +22,6 @@ def create_order_from_cart(user):
             price=item.pizza.price
         )
 
-    cart.items.all().delete()
+    items.delete()
 
     return order

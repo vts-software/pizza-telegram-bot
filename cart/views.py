@@ -1,22 +1,35 @@
-from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from drf_yasg.utils import swagger_auto_schema
+
 from cart.models import CartItem, Cart
 from users.models import TelegramUser
 
 
+@swagger_auto_schema(
+    method="get",
+    operation_description="Get user cart by telegram id"
+)
+@api_view(["GET"])
 def cart_view(request, telegram_id):
 
     try:
-        user = TelegramUser.objects.get(telegram_id=telegram_id)
+        user = TelegramUser.objects.get(
+            telegram_id=telegram_id
+        )
+
     except TelegramUser.DoesNotExist:
-        return JsonResponse(
+
+        return Response(
             {"error": "User not found"},
             status=404
         )
 
-    try:
-        cart = Cart.objects.get(user=user)
-    except Cart.DoesNotExist:
-        return JsonResponse({
+    cart = Cart.objects.filter(user=user).first()
+
+    if not cart:
+
+        return Response({
             "user": user.telegram_id,
             "items": [],
             "total_price": 0
@@ -43,10 +56,8 @@ def cart_view(request, telegram_id):
 
         total_price += item_total
 
-    data = {
+    return Response({
         "user": user.telegram_id,
         "items": cart_items,
         "total_price": float(total_price)
-    }
-
-    return JsonResponse(data)
+    })
