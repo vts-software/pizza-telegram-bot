@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from cart.models import CartItem
+from cart.models import CartItem, Cart
 from users.models import TelegramUser
 
 
@@ -13,7 +13,16 @@ def cart_view(request, telegram_id):
             status=404
         )
 
-    items = CartItem.objects.filter(user=user)
+    try:
+        cart = Cart.objects.get(user=user)
+    except Cart.DoesNotExist:
+        return JsonResponse({
+            "user": user.telegram_id,
+            "items": [],
+            "total_price": 0
+        })
+
+    items = CartItem.objects.filter(cart=cart)
 
     cart_items = []
     total_price = 0

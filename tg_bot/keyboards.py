@@ -32,7 +32,7 @@ def pizza_keyboard(pizzas):
 
         keyboard.add(
             InlineKeyboardButton(
-                f"{pizza.name} — {pizza.price}",
+                f"🍕 {pizza.name} ({pizza.size}) — {pizza.price}",
                 callback_data=f"pizza_{pizza.id}"
             )
         )
@@ -46,10 +46,14 @@ def cart_keyboard(items):
 
     for item in items:
 
-        keyboard.add(
+        keyboard.row(
             InlineKeyboardButton(
                 f"➖ {item.pizza.name}",
                 callback_data=f"remove_{item.id}"
+            ),
+            InlineKeyboardButton(
+                f"➕ {item.pizza.name}",
+                callback_data=f"pizza_{item.pizza.id}"
             )
         )
 
